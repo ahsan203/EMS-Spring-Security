@@ -1,10 +1,17 @@
 package com.ahsan.controller;
 
+import com.ahsan.dto.AuthRequest;
 import com.ahsan.entities.Employee;
 import com.ahsan.service.EmployeeService;
-import org.apache.catalina.Manager;
+import com.ahsan.service.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,19 +21,26 @@ import java.util.List;
 public class EmployeeController {
 
 
-    private EmployeeService  service;
+
     public static final String AUTHORITY_ROLE_HR = "hasAuthority('ROLE_HR')";
 
     @Autowired
-    public EmployeeController(EmployeeService service)
-    {
-        this.service = service;
-    }
+    public AuthenticationManager authenticationManager;
+    @Autowired
+    public JwtService jwtService;
+    @Autowired
+    private EmployeeService  service;
+
 
     @GetMapping("/welcome")
     public String welcome()
     {
         return "Welcome to Ahsan-FinTech.";
+    }
+    @GetMapping("/welcome2")
+    public String welcome2()
+    {
+        return "Welcome to Zoro-FinTech.";
     }
 
     @PostMapping("/create")
@@ -57,6 +71,58 @@ public class EmployeeController {
         return service.getEmployeeById(eid);
 
     }
+
+
+   /* @PostMapping("/authenticate")
+    public String authenticate(@RequestBody AuthRequest ar){
+
+        Authentication authenticate = am.authenticate(new UsernamePasswordAuthenticationToken(ar.getUserName(), ar.getPassword()));
+
+        if(authenticate.isAuthenticated())
+        {
+            return jwtService.generateToken(ar.getUserName());
+        }
+        else {
+            throw new UsernameNotFoundException("Authentication Failed!!!");
+        }
+    }*/
+   /*@PostMapping("/authenticate")
+   public String authenticate(@RequestBody AuthRequest authRequest) {
+       Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUserName(), authRequest.getPassword()));
+       if (authenticate.isAuthenticated()) {
+           return jwtService.generateToken(authRequest.getUserName());
+       } else {
+           throw new UsernameNotFoundException("Authentication failed !");
+       }
+   }*/
+
+    @PostMapping("/authenticate")
+    public ResponseEntity<?> authenticate(@RequestBody AuthRequest authRequest) {
+        try {
+            // Check if user name and password are present
+            if (authRequest.getUserName() == null || authRequest.getPassword() == null) {
+                return ResponseEntity.badRequest().body("Username and password cannot be null");
+            }
+
+            // Attempt authentication
+            Authentication authenticate = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(authRequest.getUserName(), authRequest.getPassword())
+            );
+
+            // Check if authentication is successful
+            if (authenticate.isAuthenticated()) {
+                String token = jwtService.generateToken(authRequest.getUserName());
+                return ResponseEntity.ok(token); // Return token with 200 OK
+            } else {
+                throw new UsernameNotFoundException("Authentication failed!");
+            }
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication failed: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
+        }
+    }
+
 
 
     /*------ Note:

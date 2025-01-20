@@ -6,27 +6,30 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+@Service
 public class EmployeeUserDetailsService implements UserDetailsService
 {
+    @Autowired
     private EmployeeRepository repository;
 
-    @Autowired
+    /*@Autowired
     public EmployeeUserDetailsService(EmployeeRepository repository) {
         this.repository = repository;
     }
 
     public EmployeeUserDetailsService() {
-    }
+    }*/
 
     @Override
     public UserDetails loadUserByUsername(String userName) throws UsernameNotFoundException {
 
         Optional<Employee> employee = repository.findByUserName(userName);
 
-        //---- Now convert the above employee-object to UserDetail-object
+        //---- Now convert the above employee-object to UserDetail-object as the return type is UserDetails
 
         return employee
                 .map(EmployeeUserDetails::new)

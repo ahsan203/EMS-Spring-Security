@@ -3,6 +3,8 @@ package com.ahsan.config;
 import com.ahsan.service.EmployeeUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -55,10 +57,7 @@ public class EMSSecuirtyUpgradeConfig
     @Bean
     public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder)
     {
-
-
-
-        /*UserDetails ahsan = User.withUsername("ahsan")
+         /*UserDetails ahsan = User.withUsername("ahsan")
                 .password(passwordEncoder.encode("Ahsan123$"))
                 .roles("EMPLOYEE","MANAGER").build();
 
@@ -84,10 +83,21 @@ public class EMSSecuirtyUpgradeConfig
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
 
         return http.csrf().disable()
-                .authorizeRequests().antMatchers("/employees/welcome","/employees/create").permitAll()
+                .authorizeRequests().antMatchers("/employees/welcome","/employees/create","/employees/authenticate","/employees/welcome2").permitAll()
                 .and()
-                .authorizeRequests().antMatchers("/employees/**").authenticated().and().httpBasic()
+                .authorizeRequests().antMatchers("/employees/update","/employees/all").authenticated().and().httpBasic()
                 .and().build();
     }
 
+
+   /* @Bean
+    public AuthenticationManager authenticate(AuthenticationConfiguration config) throws Exception
+    {
+        return config.getAuthenticationManager();
+    }*/
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
 }
